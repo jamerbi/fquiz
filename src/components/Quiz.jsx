@@ -31,17 +31,19 @@ const Quiz = ({ quizData }) => {
   };
 
   return (
-    <div className="flex flex-col space-y-6 px-4">
-      {/* Progress bar */}
-      <div className="w-full bg-gray-300 rounded-full h-3 mb-6">
-        <div
-          className="bg-blue-600 h-3 rounded-full transition-all"
-          style={{ width: `${(answeredQuestions / totalQuestions) * 100}%` }}
-        ></div>
+    <div className="relative flex flex-col space-y-6 px-4">
+      {/* Sticky Progress bar */}
+      <div className="sticky top-0 w-full bg-white z-10 p-4">
+        <div className="w-full bg-gray-300 rounded-full h-3">
+          <div
+            className="bg-blue-600 h-3 rounded-full transition-all"
+            style={{ width: `${(answeredQuestions / totalQuestions) * 100}%` }}
+          ></div>
+        </div>
+        <p className="text-center mt-2 font-medium">
+          {answeredQuestions} of {totalQuestions} questions answered
+        </p>
       </div>
-      <p className="text-center mb-4 font-medium">
-        {answeredQuestions} of {totalQuestions} questions answered
-      </p>
 
       {quizData.map((q, index) => (
         <div
