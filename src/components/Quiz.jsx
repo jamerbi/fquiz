@@ -3,6 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 const Quiz = ({ quizData }) => {
   const questionRefs = useRef([]);
   const [userAnswers, setUserAnswers] = useState({});
+  const [selectedOptions, setSelectedOptions] = useState({}); // Track selected options per question
   const [feedback, setFeedback] = useState({}); // Track feedback for each question
 
   // Track the number of questions answered
@@ -22,12 +23,16 @@ const Quiz = ({ quizData }) => {
   }, [answeredQuestions]);
 
   const handleAnswerSelection = (questionNumber, selectedOptionLabel, correctOptionLabel) => {
-    // Handle True/False answers: map True = 'A', False = 'B'
     const isCorrect = selectedOptionLabel === correctOptionLabel;
+
+    setSelectedOptions((prev) => ({ ...prev, [questionNumber]: selectedOptionLabel }));
+
     if (isCorrect) {
+      // Correct answer: set the user's answer and mark as correct in feedback
       setUserAnswers((prev) => ({ ...prev, [questionNumber]: selectedOptionLabel }));
       setFeedback((prev) => ({ ...prev, [questionNumber]: 'correct' }));
     } else {
+      // Wrong answer: mark as incorrect in feedback but allow further attempts
       setFeedback((prev) => ({ ...prev, [questionNumber]: 'incorrect' }));
     }
   };
@@ -68,10 +73,10 @@ const Quiz = ({ quizData }) => {
                 onClick={() =>
                   handleAnswerSelection(q.number, opt.label, q.correctAnswer)
                 }
-                disabled={userAnswers[q.number] !== undefined}
+                disabled={userAnswers[q.number] !== undefined} // Disable after correct answer
                 className={`w-full py-3 px-4 sm:py-2 sm:px-2 rounded-lg font-medium text-left flex items-center space-x-3 transition-all duration-200
                   ${
-                    userAnswers[q.number] === opt.label
+                    selectedOptions[q.number] === opt.label
                       ? feedback[q.number] === 'correct'
                         ? 'bg-green-500 dark:bg-green-700 text-white'
                         : 'bg-red-500 dark:bg-red-700 text-white'
@@ -86,10 +91,6 @@ const Quiz = ({ quizData }) => {
               </button>
             ))}
           </div>
-
-          {feedback[q.number] === 'incorrect' && (
-            <p className="text-red-600 dark:text-red-400 mt-3 font-medium text-sm">Wrong answer! Please try again.</p>
-          )}
         </div>
       ))}
     </div>
