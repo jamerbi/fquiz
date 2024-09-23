@@ -31,16 +31,17 @@ const Quiz = ({ quizData }) => {
   };
 
   return (
-    <div className="relative flex flex-col space-y-6 px-4">
+    <div className="relative flex flex-col space-y-6 px-1">
       {/* Sticky Progress bar */}
-      <div className="sticky top-0 w-full bg-white z-10 p-4">
-        <div className="w-full bg-gray-300 rounded-full h-3">
+      <div className="sticky top-0 w-full bg-gray-100 border-b border-gray-300 z-10 p-4 sm:p-2 shadow-lg">
+        <div className="relative w-full bg-gray-300 rounded-full h-4 border-2 border-blue-500">
           <div
             className="bg-blue-600 h-3 rounded-full transition-all"
             style={{ width: `${(answeredQuestions / totalQuestions) * 100}%` }}
           ></div>
+          {/* Add a border to the progress bar */}
         </div>
-        <p className="text-center mt-2 font-medium">
+        <p className="text-center mt-2 font-medium text-sm sm:text-xs">
           {answeredQuestions} of {totalQuestions} questions answered
         </p>
       </div>
@@ -49,11 +50,11 @@ const Quiz = ({ quizData }) => {
         <div
           key={q.number}
           ref={(el) => (questionRefs.current[index] = el)}
-          className={`p-6 rounded-xl shadow-md transition-all duration-300 border ${
+          className={`p-3 rounded-xl shadow-md transition-all duration-300 border ${
             feedback[q.number] === 'correct' ? 'bg-green-100 border-green-400' : 'bg-white border-gray-200'
           }`}
         >
-          <h3 className="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">
+          <h3 className="text-lg sm:text-base font-semibold mb-4 text-gray-800 border-b pb-2">
             {q.number}. {q.text}
           </h3>
 
@@ -65,7 +66,7 @@ const Quiz = ({ quizData }) => {
                   handleAnswerSelection(q.number, opt.label, q.correctAnswer)
                 }
                 disabled={userAnswers[q.number] !== undefined}
-                className={`w-full py-3 px-4 rounded-lg font-medium text-left flex items-center space-x-3 transition-all duration-200
+                className={`w-full py-3 px-4 sm:py-2 sm:px-2 rounded-lg font-medium text-left flex items-center space-x-3 transition-all duration-200
                   ${
                     userAnswers[q.number] === opt.label
                       ? feedback[q.number] === 'correct'
@@ -75,16 +76,16 @@ const Quiz = ({ quizData }) => {
                   }`}
               >
                 {/* Circle for the option letter */}
-                <div className="w-8 h-8 rounded-full bg-white text-blue-500 font-semibold flex justify-center items-center">
+                <div className="flex-shrink-0 w-8 h-8 sm:w-6 sm:h-6 rounded-full bg-white text-blue-500 font-semibold flex justify-center items-center">
                   {opt.label}
                 </div>
-                <span>{opt.answer}</span>
+                <span className="flex-grow">{opt.answer}</span>
               </button>
             ))}
           </div>
 
           {feedback[q.number] === 'incorrect' && (
-            <p className="text-red-600 mt-3 font-medium">Wrong answer! Please try again.</p>
+            <p className="text-red-600 mt-3 font-medium text-sm">Wrong answer! Please try again.</p>
           )}
         </div>
       ))}
