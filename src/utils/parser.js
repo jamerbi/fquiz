@@ -28,7 +28,7 @@ export const parseQuestions = (text, quizType) => {
     questions.push(currentQuestion); // Push the last question
   }
 
-  // For True/False quiz, add True/False as options
+  // For True/False quiz, add True/False as options if needed
   if (quizType === 'true-false') {
     questions.forEach((q) => {
       q.options = [
@@ -49,7 +49,15 @@ export const parseAnswers = (text) => {
     const answerMatch = line.match(/^(\d+)\.\s+(True|False|[A-D])/); // Match question number and correct option
     if (answerMatch) {
       const questionNumber = answerMatch[1]; // e.g., 1
-      const correctOption = answerMatch[2]; // e.g., "True" or "A"
+      let correctOption = answerMatch[2]; // e.g., "True", "False" or "A"
+
+      // Convert "True" and "False" to their corresponding labels for consistency
+      if (correctOption === 'True') {
+        correctOption = 'A';
+      } else if (correctOption === 'False') {
+        correctOption = 'B';
+      }
+
       answers[questionNumber] = correctOption;
     }
   });

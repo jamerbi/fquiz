@@ -22,7 +22,9 @@ const Quiz = ({ quizData }) => {
   }, [answeredQuestions]);
 
   const handleAnswerSelection = (questionNumber, selectedOptionLabel, correctOptionLabel) => {
-    if (selectedOptionLabel === correctOptionLabel) {
+    // Handle True/False answers: map True = 'A', False = 'B'
+    const isCorrect = selectedOptionLabel === correctOptionLabel;
+    if (isCorrect) {
       setUserAnswers((prev) => ({ ...prev, [questionNumber]: selectedOptionLabel }));
       setFeedback((prev) => ({ ...prev, [questionNumber]: 'correct' }));
     } else {
@@ -39,7 +41,6 @@ const Quiz = ({ quizData }) => {
             className="bg-blue-600 h-3 rounded-full transition-all"
             style={{ width: `${(answeredQuestions / totalQuestions) * 100}%` }}
           ></div>
-          {/* Add a border to the progress bar */}
         </div>
         <p className="text-center mt-2 font-medium text-sm sm:text-xs">
           {answeredQuestions} of {totalQuestions} questions answered
