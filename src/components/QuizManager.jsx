@@ -1,6 +1,6 @@
 import React from 'react';
 
-const QuizManager = ({ quizzes, startQuiz, resetQuiz, setCurrentView }) => {
+const QuizManager = ({ quizzes, startQuiz, resetQuiz, setCurrentView, onEditQuiz }) => {
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Manage Quizzes</h2>
@@ -20,6 +20,17 @@ const QuizManager = ({ quizzes, startQuiz, resetQuiz, setCurrentView }) => {
               >
                 Start Quiz
               </button>
+              <button
+                onClick={() => onEditQuiz(quiz)}
+                className="ml-2 px-3 py-1 bg-green-600 text-white rounded"
+              >
+                Edit
+              </button>
+              <div className="mt-2 text-sm">
+                <p>Times completed: {quiz.stats.timesCompleted}</p>
+                <p>Average time: {quiz.stats.averageTime.toFixed(2)} seconds</p>
+                <p>Questions answered: {quiz.stats.questionsAnswered}</p>
+              </div>
             </li>
           ))}
         </ul>

@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 const QuizOptions = ({ quizData, onSaveAndStart, onCancel }) => {
   const [quizName, setQuizName] = useState(`Quiz ${Date.now()}`);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(quizData.length);
-  const [timeLimit, setTimeLimit] = useState(0); // 0 means no time limit
+  const [timeLimit, setTimeLimit] = useState(0);
   const [randomizeOrder, setRandomizeOrder] = useState(false);
 
   const handleSaveAndStart = () => {
@@ -21,7 +21,6 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel }) => {
     onSaveAndStart(configuredQuiz);
   };
 
-  // Fisher-Yates shuffle algorithm
   const shuffleArray = (array) => {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -33,7 +32,7 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel }) => {
   return (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
       <h2 className="text-2xl font-bold mb-4">Quiz Options</h2>
-      
+
       <div className="mb-4">
         <label className="block mb-2 font-semibold">Quiz Name:</label>
         <input

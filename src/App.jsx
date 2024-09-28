@@ -5,6 +5,7 @@ import Quiz from './components/Quiz';
 import QuizManager from './components/QuizManager';
 import QuizOptions from './components/QuizOptions';
 import { parseQuestions, parseAnswers, generateQuiz } from './utils/parser';
+import { initializeDB, saveQuizToDB, loadQuizzesFromDB, updateQuizStats } from './utils/database';
 
 function App() {
   const [questionText, setQuestionText] = useState('');
@@ -13,12 +14,28 @@ function App() {
   const [quizType, setQuizType] = useState('multiple-choice');
   const [darkMode, setDarkMode] = useState(false);
   const [quizzes, setQuizzes] = useState([]);
-  const [currentView, setCurrentView] = useState('create'); // 'create', 'options', 'quiz', or 'manage'
+  const [currentView, setCurrentView] = useState('create');
   const [currentQuiz, setCurrentQuiz] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    const storedQuizzes = JSON.parse(localStorage.getItem('quizzes')) || [];
-    setQuizzes(storedQuizzes);
+    const storedUserId = localStorage.getItem('userId');
+    if (storedUserId) {
+      setUserId(storedUserId);
+    } else {
+      const newUserId = `user_${Date.now()}`;
+      localStorage.setItem('userId', newUserId);
+      setUserId(newUserId);
+    }
+
+    const storedDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(storedDarkMode);
+
+    initializeDB().then(() => {
+      loadQuizzesFromDB().then(loadedQuizzes => {
+        setQuizzes(loadedQuizzes);
+      });
+    });
   }, []);
 
   const handleGenerateQuiz = () => {
@@ -29,18 +46,33 @@ function App() {
     setCurrentView('options');
   };
 
-  const toggleDarkMode = () => setDarkMode(!darkMode);
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode);
+  };
 
   const saveQuiz = (configuredQuiz) => {
     const newQuiz = {
       ...configuredQuiz,
       id: Date.now(),
       type: quizType,
+      userId: userId,
+      stats: {
+        timesCompleted: 0,
+        averageTime: 0,
+        questionsAnswered: 0,
+        questionStats: configuredQuiz.questions.map(q => ({
+          id: q.number,
+          timesAnswered: 0,
+          timesCorrect: 0
+        }))
+      }
     };
-    const updatedQuizzes = [...quizzes, newQuiz];
-    setQuizzes(updatedQuizzes);
-    localStorage.setItem('quizzes', JSON.stringify(updatedQuizzes));
-    startQuiz(newQuiz);
+    saveQuizToDB(newQuiz).then(() => {
+      setQuizzes([...quizzes, newQuiz]);
+      startQuiz(newQuiz);
+    });
   };
 
   const startQuiz = (quiz) => {
@@ -48,7 +80,7 @@ function App() {
     if (quiz.randomized) {
       quizQuestions = shuffleArray(quizQuestions);
     }
-    setCurrentQuiz({...quiz, questions: quizQuestions});
+    setCurrentQuiz({ ...quiz, questions: quizQuestions });
     setCurrentView('quiz');
   };
 
@@ -66,6 +98,15 @@ function App() {
     setAnswerText('');
     setCurrentQuiz(null);
     setCurrentView('create');
+  };
+
+  const handleQuizCompletion = (quizResults) => {
+    updateQuizStats(currentQuiz.id, quizResults).then(() => {
+      loadQuizzesFromDB().then(loadedQuizzes => {
+        setQuizzes(loadedQuizzes);
+      });
+    });
+    setCurrentView('manage');
   };
 
   return (
@@ -121,12 +162,13 @@ function App() {
           />
         )}
 
-{currentView === 'quiz' && currentQuiz && (
+        {currentView === 'quiz' && currentQuiz && (
           <div>
-            <Quiz 
-              quizData={currentQuiz.questions} 
+            <Quiz
+              quizData={currentQuiz.questions}
               timeLimit={currentQuiz.timeLimit}
               quizName={currentQuiz.name}
+              onComplete={handleQuizCompletion}
             />
             <div className="mt-4 space-x-2">
               <button
@@ -145,6 +187,10 @@ function App() {
             startQuiz={startQuiz}
             resetQuiz={resetQuiz}
             setCurrentView={setCurrentView}
+            onEditQuiz={(quiz) => {
+              setQuizData(quiz.questions);
+              setCurrentView('options');
+            }}
           />
         )}
       </div>
