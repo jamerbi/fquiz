@@ -110,3 +110,5 @@ ${selectedOptions[q.number] === opt.label
     </div>
   );
 };
+
+export default Quiz;

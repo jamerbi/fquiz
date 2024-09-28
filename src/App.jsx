@@ -17,26 +17,45 @@ function App() {
   const [currentView, setCurrentView] = useState('create');
   const [currentQuiz, setCurrentQuiz] = useState(null);
   const [userId, setUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const storedUserId = localStorage.getItem('userId');
-    if (storedUserId) {
-      setUserId(storedUserId);
-    } else {
-      const newUserId = `user_${Date.now()}`;
-      localStorage.setItem('userId', newUserId);
-      setUserId(newUserId);
-    }
+    const initializeApp = async () => {
+      try {
+        const storedUserId = localStorage.getItem('userId');
+        if (storedUserId) {
+          setUserId(storedUserId);
+        } else {
+          const newUserId = `user_${Date.now()}`;
+          localStorage.setItem('userId', newUserId);
+          setUserId(newUserId);
+        }
 
-    const storedDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(storedDarkMode);
+        const storedDarkMode = localStorage.getItem('darkMode') === 'true';
+        setDarkMode(storedDarkMode);
 
-    initializeDB().then(() => {
-      loadQuizzesFromDB().then(loadedQuizzes => {
+        await initializeDB();
+        const loadedQuizzes = await loadQuizzesFromDB();
         setQuizzes(loadedQuizzes);
-      });
-    });
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error initializing app:', err);
+        setError(err.message);
+        setIsLoading(false);
+      }
+    };
+
+    initializeApp();
   }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   const handleGenerateQuiz = () => {
     const questions = parseQuestions(questionText, quizType);
