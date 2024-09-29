@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const QuizOptions = ({ quizData, onSaveAndStart, onCancel }) => {
+const QuizOptions = ({ quizData, onSaveAndStart, onCancel, quizFormat }) => {
   const [quizName, setQuizName] = useState(`Quiz ${Date.now()}`);
   const [selectedQuestionCount, setSelectedQuestionCount] = useState(quizData.length);
   const [timeLimit, setTimeLimit] = useState(0);
@@ -16,7 +16,8 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel }) => {
       name: quizName,
       questions: selectedQuestions,
       timeLimit: timeLimit,
-      randomized: randomizeOrder
+      randomized: randomizeOrder,
+      format: quizFormat
     };
     onSaveAndStart(configuredQuiz);
   };
@@ -40,6 +41,16 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel }) => {
           value={quizName}
           onChange={(e) => setQuizName(e.target.value)}
           className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block mb-2 font-semibold">Quiz Format:</label>
+        <input
+          type="text"
+          value={quizFormat}
+          readOnly
+          className="w-full px-3 py-2 border rounded bg-gray-100 dark:bg-gray-600 dark:text-gray-300"
         />
       </div>
 

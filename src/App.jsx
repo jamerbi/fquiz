@@ -4,7 +4,7 @@ import AnswerInput from './components/AnswerInput';
 import Quiz from './components/Quiz';
 import QuizManager from './components/QuizManager';
 import QuizOptions from './components/QuizOptions';
-import { parseQuestions, parseAnswers, generateQuiz } from './utils/parser';
+import { parseQuestions, parseAnswers, generateQuiz, parseFlashcards } from './utils/parser';
 import { initializeDB, saveQuizToDB, loadQuizzesFromDB, updateQuizStats } from './utils/database';
 
 function App() {
@@ -19,6 +19,7 @@ function App() {
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [quizFormat, setQuizFormat] = useState('standard');
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -58,9 +59,14 @@ function App() {
   }
 
   const handleGenerateQuiz = () => {
-    const questions = parseQuestions(questionText, quizType);
-    const answers = parseAnswers(answerText, quizType);
-    const quiz = generateQuiz(questions, answers);
+    let quiz;
+    if (quizFormat === 'standard') {
+      const questions = parseQuestions(questionText, quizType);
+      const answers = parseAnswers(answerText, quizType);
+      quiz = generateQuiz(questions, answers);
+    } else if (quizFormat === 'flashcards') {
+      quiz = parseFlashcards(questionText, quizType);
+    }
     setQuizData(quiz);
     setCurrentView('options');
   };
@@ -152,18 +158,53 @@ function App() {
         {currentView === 'create' && (
           <div className="space-y-4">
             <div className="mb-4">
-              <label className="block mb-2 font-semibold">Select Quiz Type:</label>
+              <label className="block mb-2 font-semibold">Select Quiz Format:</label>
               <select
-                value={quizType}
-                onChange={(e) => setQuizType(e.target.value)}
+                value={quizFormat}
+                onChange={(e) => setQuizFormat(e.target.value)}
                 className="px-4 py-2 border rounded bg-white dark:bg-gray-800 dark:text-white"
               >
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="true-false">True/False</option>
+                <option value="standard">Standard</option>
+                <option value="flashcards">Flashcards</option>
               </select>
             </div>
-            <QuestionInput value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
-            <AnswerInput value={answerText} onChange={(e) => setAnswerText(e.target.value)} />
+            {quizFormat === 'standard' && (
+              <>
+                <div className="mb-4">
+                  <label className="block mb-2 font-semibold">Select Quiz Type:</label>
+                  <select
+                    value={quizType}
+                    onChange={(e) => setQuizType(e.target.value)}
+                    className="px-4 py-2 border rounded bg-white dark:bg-gray-800 dark:text-white"
+                  >
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="true-false">True/False</option>
+                  </select>
+                </div>
+                <QuestionInput value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
+                <AnswerInput value={answerText} onChange={(e) => setAnswerText(e.target.value)} />
+              </>
+            )}
+            {quizFormat === 'flashcards' && (
+              <>
+                <div className="mb-4">
+                  <label className="block mb-2 font-semibold">Select Quiz Type:</label>
+                  <select
+                    value={quizType}
+                    onChange={(e) => setQuizType(e.target.value)}
+                    className="px-4 py-2 border rounded bg-white dark:bg-gray-800 dark:text-white"
+                  >
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="true-false">True/False</option>
+                  </select>
+                </div>
+                <QuestionInput
+                  value={questionText}
+                  onChange={(e) => setQuestionText(e.target.value)}
+                  placeholder="Enter flashcards (one per line, question and answer separated by a tab)"
+                />
+              </>
+            )}
             <button
               onClick={handleGenerateQuiz}
               className="px-4 py-2 bg-blue-600 text-white rounded"
