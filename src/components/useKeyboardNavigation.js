@@ -1,10 +1,12 @@
 import { useEffect } from 'react';
 
-const useKeyboardNavigation = (quizData, currentQuestionIndex, userAnswers, handleAnswerSelection) => {
+const useKeyboardNavigation = (quizData, currentQuestionIndex, userAnswers, handleAnswerSubmission, answerMode) => {
   useEffect(() => {
     const handleKeyPress = (event) => {
+      if (answerMode !== 'select') return; // Only handle keyboard navigation for 'select' mode
+
       const currentQuestion = quizData[currentQuestionIndex];
-      if (!currentQuestion) return;
+      if (!currentQuestion || userAnswers[currentQuestion.number]) return;
 
       const optionCount = currentQuestion.options.length;
       let selectedIndex = -1;
@@ -21,13 +23,9 @@ const useKeyboardNavigation = (quizData, currentQuestionIndex, userAnswers, hand
         if (['4', '/'].includes(event.key)) selectedIndex = 3;
       }
 
-      if (selectedIndex !== -1 && !userAnswers[currentQuestion.number]) {
+      if (selectedIndex !== -1) {
         const selectedOption = currentQuestion.options[selectedIndex];
-        handleAnswerSelection(
-          currentQuestion.number,
-          selectedOption.label,
-          currentQuestion.correctAnswer
-        );
+        handleAnswerSubmission(currentQuestion.number, selectedOption.label);
       }
     };
 
@@ -35,7 +33,7 @@ const useKeyboardNavigation = (quizData, currentQuestionIndex, userAnswers, hand
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [currentQuestionIndex, quizData, userAnswers, handleAnswerSelection]);
+  }, [quizData, currentQuestionIndex, userAnswers, handleAnswerSubmission, answerMode]);
 };
 
 export default useKeyboardNavigation;

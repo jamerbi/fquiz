@@ -76,7 +76,7 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel, quizFormat }) => {
         />
       </div>
 
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label className="block mb-2 font-semibold">Time Limit (minutes, 0 for no limit):</label>
         <input
           type="number"
@@ -85,9 +85,9 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel, quizFormat }) => {
           onChange={(e) => setTimeLimit(parseInt(e.target.value) || 0)}
           className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:text-white"
         />
-      </div>
+      </div> */}
 
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label className="flex items-center">
           <input
             type="checkbox"
@@ -97,7 +97,7 @@ const QuizOptions = ({ quizData, onSaveAndStart, onCancel, quizFormat }) => {
           />
           <span className="font-semibold">Randomize Question Order</span>
         </label>
-      </div>
+      </div> */}
 
       <div className="mb-6">
         <h3 className="font-semibold mb-2">Preview (First 3 Questions):</h3>
