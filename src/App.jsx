@@ -133,10 +133,11 @@ function App() {
     });
     setCurrentView('manage');
   };
-
+  
   return (
     <div className={darkMode ? 'dark' : ''}>
-      <div className="container mx-auto p-4 min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+      <div className="p-4 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
+        <div className="mx-auto max-w-3xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-center text-4xl font-bold text-blue-600 dark:text-blue-400">fQuiz</h1>
           <div>
@@ -253,6 +254,7 @@ function App() {
             }}
           />
         )}
+        </div>
       </div>
     </div>
   );
