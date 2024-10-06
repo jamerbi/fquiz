@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import QuestionInput from './components/QuestionInput';
-import AnswerInput from './components/AnswerInput';
-import Quiz from './components/Quiz';
 import QuizManager from './components/QuizManager';
+import QuizForm from './components/QuizForm';
+import QuizView from './components/QuizView';
+import Header from './components/Header';
 import QuizOptions from './components/QuizOptions';
 import { parseQuestions, parseAnswers, generateQuiz, parseFlashcards } from './utils/parser';
 import { initializeDB, saveQuizToDB, loadQuizzesFromDB, updateQuizStats } from './utils/database';
+import { shuffleArray } from './utils/app';
 
 function App() {
   const [questionText, setQuestionText] = useState('');
@@ -50,13 +51,8 @@ function App() {
     initializeApp();
   }, []);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   const handleGenerateQuiz = () => {
     let quiz;
@@ -82,17 +78,17 @@ function App() {
       ...configuredQuiz,
       id: Date.now(),
       type: quizType,
-      userId: userId,
+      userId,
       stats: {
         timesCompleted: 0,
         averageTime: 0,
         questionsAnswered: 0,
-        questionStats: configuredQuiz.questions.map(q => ({
+        questionStats: configuredQuiz.questions.map((q) => ({
           id: q.number,
           timesAnswered: 0,
-          timesCorrect: 0
-        }))
-      }
+          timesCorrect: 0,
+        })),
+      },
     };
     saveQuizToDB(newQuiz).then(() => {
       setQuizzes([...quizzes, newQuiz]);
@@ -109,151 +105,74 @@ function App() {
     setCurrentView('quiz');
   };
 
-  const shuffleArray = (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  };
-
-  const resetQuiz = () => {
-    setQuizData([]);
-    setQuestionText('');
-    setAnswerText('');
-    setCurrentQuiz(null);
-    setCurrentView('create');
-  };
-
   const handleQuizCompletion = (quizResults) => {
     updateQuizStats(currentQuiz.id, quizResults).then(() => {
       loadQuizzesFromDB().then(loadedQuizzes => {
         setQuizzes(loadedQuizzes);
       });
     });
-    setCurrentView('manage');
+    setCurrentView('complete');
   };
-  
+
+  const resetQuiz = () => {
+    setCurrentQuiz(null);
+    setCurrentView('create');
+  };
+
   return (
     <div className={darkMode ? 'dark' : ''}>
       <div className="p-4 min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white">
         <div className="mx-auto max-w-3xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-center text-4xl font-bold text-blue-600 dark:text-blue-400">fQuiz</h1>
-          <div>
-            <button
-              onClick={toggleDarkMode}
-              className="px-4 py-2 bg-blue-600 text-white rounded mr-2"
-            >
-              {darkMode ? 'Light Mode' : 'Dark Mode'}
-            </button>
-            <button
-              onClick={() => setCurrentView('manage')}
-              className="px-4 py-2 bg-green-600 text-white rounded"
-            >
-              Manage Quizzes
-            </button>
-          </div>
-        </div>
+          <Header darkMode={darkMode} toggleDarkMode={toggleDarkMode} setCurrentView={setCurrentView} />
 
-        {currentView === 'create' && (
-          <div className="space-y-4">
-            <div className="mb-4">
-              <label className="block mb-2 font-semibold">Select Quiz Format:</label>
-              <select
-                value={quizFormat}
-                onChange={(e) => setQuizFormat(e.target.value)}
-                className="px-4 py-2 border rounded bg-white dark:bg-gray-800 dark:text-white"
-              >
-                <option value="standard">Standard</option>
-                <option value="flashcards">Flashcards</option>
-              </select>
-            </div>
-            {quizFormat === 'standard' && (
-              <>
-                <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Select Quiz Type:</label>
-                  <select
-                    value={quizType}
-                    onChange={(e) => setQuizType(e.target.value)}
-                    className="px-4 py-2 border rounded bg-white dark:bg-gray-800 dark:text-white"
-                  >
-                    <option value="multiple-choice">Multiple Choice</option>
-                    <option value="true-false">True/False</option>
-                  </select>
-                </div>
-                <QuestionInput value={questionText} onChange={(e) => setQuestionText(e.target.value)} />
-                <AnswerInput value={answerText} onChange={(e) => setAnswerText(e.target.value)} />
-              </>
-            )}
-            {quizFormat === 'flashcards' && (
-              <>
-                <div className="mb-4">
-                  <label className="block mb-2 font-semibold">Select Quiz Type:</label>
-                  <select
-                    value={quizType}
-                    onChange={(e) => setQuizType(e.target.value)}
-                    className="px-4 py-2 border rounded bg-white dark:bg-gray-800 dark:text-white"
-                  >
-                    <option value="multiple-choice">Multiple Choice</option>
-                    <option value="true-false">True/False</option>
-                  </select>
-                </div>
-                <QuestionInput
-                  value={questionText}
-                  onChange={(e) => setQuestionText(e.target.value)}
-                  placeholder="Enter flashcards (one per line, question and answer separated by a tab)"
-                />
-              </>
-            )}
-            <button
-              onClick={handleGenerateQuiz}
-              className="px-4 py-2 bg-blue-600 text-white rounded"
-            >
-              Generate Quiz
-            </button>
-          </div>
-        )}
-
-        {currentView === 'options' && (
-          <QuizOptions
-            quizData={quizData}
-            onSaveAndStart={saveQuiz}
-            onCancel={resetQuiz}
-          />
-        )}
-
-        {currentView === 'quiz' && currentQuiz && (
-          <div>
-            <Quiz
-              quizData={currentQuiz.questions}
-              timeLimit={currentQuiz.timeLimit}
-              quizName={currentQuiz.name}
-              onComplete={handleQuizCompletion}
+          {currentView === 'create' && (
+            <QuizForm
+              quizFormat={quizFormat}
+              setQuizFormat={setQuizFormat}
+              quizType={quizType}
+              setQuizType={setQuizType}
+              questionText={questionText}
+              setQuestionText={setQuestionText}
+              answerText={answerText}
+              setAnswerText={setAnswerText}
+              handleGenerateQuiz={handleGenerateQuiz}
             />
-            <div className="mt-4 space-x-2">
-              <button
-                onClick={resetQuiz}
-                className="px-4 py-2 bg-red-600 text-white rounded"
-              >
-                End Quiz
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
-        {currentView === 'manage' && (
-          <QuizManager
-            quizzes={quizzes}
-            startQuiz={startQuiz}
-            resetQuiz={resetQuiz}
-            setCurrentView={setCurrentView}
-            onEditQuiz={(quiz) => {
-              setQuizData(quiz.questions);
-              setCurrentView('options');
-            }}
-          />
-        )}
+          {currentView === 'options' && (
+            <QuizOptions
+              quizData={quizData}
+              onSaveAndStart={saveQuiz}
+              onCancel={resetQuiz}
+            />
+          )}
+
+          {currentView === 'quiz' && currentQuiz && (
+            <QuizView 
+              currentQuiz={currentQuiz} 
+              resetQuiz={resetQuiz} 
+              handleQuizCompletion={handleQuizCompletion} />
+          )}
+
+          {currentView === 'manage' && (
+            <QuizManager
+              quizzes={quizzes}
+              startQuiz={startQuiz}
+              resetQuiz={resetQuiz}
+              setCurrentView={setCurrentView}
+              onEditQuiz={(quiz) => {
+                setQuizData(quiz.questions);
+                setCurrentView('options');
+              }}
+            />
+          )}
+
+          {currentView === 'complete' && (
+            <div>
+              <h2>Quiz Completed!</h2>
+              <button onClick={resetQuiz}>Create a new quiz</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
