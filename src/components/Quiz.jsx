@@ -65,9 +65,9 @@ const Quiz = ({ quizData, timeLimit, quizName, onComplete }) => {
     const isCorrect = isAnswerCorrect(question, answer);
 
     setFeedback(prev => ({ ...prev, [questionNumber]: isCorrect ? 'correct' : 'incorrect' }));
+    setUserAnswers(prev => ({ ...prev, [questionNumber]: answer }));
 
     if (isCorrect && currentQuestionIndex < totalQuestions - 1) {
-      setUserAnswers(prev => ({ ...prev, [questionNumber]: answer }));
       setCurrentQuestionIndex(prev => Math.min(prev + 1, totalQuestions - 1));
 
       setTimeout(() => {
@@ -120,4 +120,3 @@ const Quiz = ({ quizData, timeLimit, quizName, onComplete }) => {
 };
 
 export default Quiz;
-
