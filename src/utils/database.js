@@ -93,3 +93,37 @@ export const updateQuizStats = (quizId, quizResults) => {
         request.onerror = () => reject(request.error);
     });
 };
+
+// Unit tests for the utility functions
+describe('Database Utility Functions', () => {
+    test('initializeDB should initialize the database', async () => {
+        const db = await initializeDB();
+        expect(db.name).toBe(DB_NAME);
+    });
+
+    test('saveQuizToDB should save a quiz to the database', async () => {
+        const quiz = { id: 1, name: 'Sample Quiz' };
+        await saveQuizToDB(quiz);
+        const quizzes = await loadQuizzesFromDB();
+        expect(quizzes).toContainEqual(quiz);
+    });
+
+    test('loadQuizzesFromDB should load quizzes from the database', async () => {
+        const quiz = { id: 2, name: 'Another Quiz' };
+        await saveQuizToDB(quiz);
+        const quizzes = await loadQuizzesFromDB();
+        expect(quizzes).toContainEqual(quiz);
+    });
+
+    test('updateQuizStats should update the quiz statistics', async () => {
+        const quiz = { id: 3, name: 'Stats Quiz', stats: { timesCompleted: 0, averageTime: 0, questionsAnswered: 0, questionStats: [] } };
+        await saveQuizToDB(quiz);
+        const quizResults = { time: 10, answeredQuestions: 5, questionResults: [] };
+        await updateQuizStats(quiz.id, quizResults);
+        const quizzes = await loadQuizzesFromDB();
+        const updatedQuiz = quizzes.find(q => q.id === quiz.id);
+        expect(updatedQuiz.stats.timesCompleted).toBe(1);
+        expect(updatedQuiz.stats.averageTime).toBe(10);
+        expect(updatedQuiz.stats.questionsAnswered).toBe(5);
+    });
+});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import QuizManager from './components/QuizManager';
 import QuizForm from './components/QuizForm';
 import QuizView from './components/QuizView';
@@ -54,7 +54,7 @@ function App() {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
 
-  const handleGenerateQuiz = () => {
+  const handleGenerateQuiz = useCallback(() => {
     let quiz;
     if (quizFormat === 'standard') {
       const questions = parseQuestions(questionText, quizType);
@@ -65,15 +65,15 @@ function App() {
     }
     setQuizData(quiz);
     setCurrentView('options');
-  };
+  }, [questionText, answerText, quizFormat, quizType]);
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = useCallback(() => {
     const newDarkMode = !darkMode;
     setDarkMode(newDarkMode);
     localStorage.setItem('darkMode', newDarkMode);
-  };
+  }, [darkMode]);
 
-  const saveQuiz = (configuredQuiz) => {
+  const saveQuiz = useCallback((configuredQuiz) => {
     const newQuiz = {
       ...configuredQuiz,
       id: Date.now(),
@@ -91,33 +91,35 @@ function App() {
       },
     };
     saveQuizToDB(newQuiz).then(() => {
-      setQuizzes([...quizzes, newQuiz]);
+      setQuizzes((prevQuizzes) => [...prevQuizzes, newQuiz]);
       startQuiz(newQuiz);
     });
-  };
+  }, [quizType, userId]);
 
-  const startQuiz = (quiz) => {
+  const startQuiz = useCallback((quiz) => {
     let quizQuestions = [...quiz.questions];
     if (quiz.randomized) {
       quizQuestions = shuffleArray(quizQuestions);
     }
     setCurrentQuiz({ ...quiz, questions: quizQuestions });
     setCurrentView('quiz');
-  };
+  }, []);
 
-  const handleQuizCompletion = (quizResults) => {
+  const handleQuizCompletion = useCallback((quizResults) => {
     updateQuizStats(currentQuiz.id, quizResults).then(() => {
       loadQuizzesFromDB().then(loadedQuizzes => {
         setQuizzes(loadedQuizzes);
       });
     });
     setCurrentView('complete');
-  };
+  }, [currentQuiz]);
 
-  const resetQuiz = () => {
+  const resetQuiz = useCallback(() => {
     setCurrentQuiz(null);
     setCurrentView('create');
-  };
+  }, []);
+
+  const memoizedQuizzes = useMemo(() => quizzes, [quizzes]);
 
   return (
     <div className={darkMode ? 'dark' : ''}>
@@ -156,7 +158,7 @@ function App() {
 
           {currentView === 'manage' && (
             <QuizManager
-              quizzes={quizzes}
+              quizzes={memoizedQuizzes}
               startQuiz={startQuiz}
               resetQuiz={resetQuiz}
               setCurrentView={setCurrentView}
